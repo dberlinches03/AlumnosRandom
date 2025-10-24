@@ -60,7 +60,26 @@ fun RandomAlumnos(modifier: Modifier = Modifier
     val alumnosSorteados = remember { mutableStateListOf<Alumno>() }
     var alumnoActual by remember { mutableStateOf<Alumno?>(null) }
 
+    Column(
+        modifier = modifier.padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text("Sorteo de Alumnos", style = MaterialTheme.typography.headlineMedium)
 
+        Button(onClick = {
+            val alumnnosRestantes = alumnos.filter { it !in alumnosSorteados }
+            if (alumnnosRestantes.isNotEmpty()) {
+                val alumnoSeleccionado = alumnnosRestantes.random()
+                alumnoActual = alumnoSeleccionado
+                alumnosSorteados.add(alumnoSeleccionado)
+            } else {
+                alumnoActual = null
+            }
+        }) {
+            Text("Sortear alumno")
+        }
+    }
 }
 
 @Preview(showBackground = true)
