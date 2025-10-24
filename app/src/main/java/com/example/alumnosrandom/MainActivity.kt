@@ -11,9 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.alumnosrandom.ui.theme.AlumnosRandomTheme
-import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,21 +42,23 @@ class MainActivity : ComponentActivity() {
 fun RandomAlumnos(modifier: Modifier = Modifier
     .fillMaxSize()
     .wrapContentSize(Alignment.Center)) {
-    val nombresAlumnos = listOf("David Berlinches", "Carlos Barrera", "Iker Toribio", "Benjamin Vargas", "David Salvador", "Daniel Beltrán", "Abzael Rodriguez")
 
+    val alumnos = remember { mutableStateListOf(
+        Alumno("David Berlinches", 1),
+        Alumno("Carlos Barrera", 2),
+        Alumno("Iker Toribio", 3),
+        Alumno("Benjamin Vargas", 4),
+        Alumno("David Salvador", 5),
+        Alumno("Daniel Beltrán", 6),
+        Alumno("Abzael Rodriguez", 7)
+    ) }
 
-    val alumnos = remember {
-        val numerosAleatorios = (1..21).shuffled()
-        val listaAlumnos = mutableListOf<Alumno>()
-        for (i in nombresAlumnos.indices) {
-            val nombre = nombresAlumnos[i]
-            val numero = numerosAleatorios[i]
-            listaAlumnos.add(Alumno(nombre, numero))
-        }
-        listaAlumnos
-    }
     val alumnosSorteados = remember { mutableStateListOf<Alumno>() }
     var alumnoActual by remember { mutableStateOf<Alumno?>(null) }
+    var nuevoAlumno by remember { mutableStateOf("") }
+    var mensajeError by remember { mutableStateOf("") }
+
+    val alumnosDisponibles = alumnos.filter { it !in alumnosSorteados}
 
     Column(
         modifier = modifier.padding(24.dp),
@@ -67,24 +67,66 @@ fun RandomAlumnos(modifier: Modifier = Modifier
     ) {
         Text("Sorteo de Alumnos", style = MaterialTheme.typography.headlineMedium)
 
+        OutlinedTextField(
+            value = nuevoAlumno,
+            onValueChange = { nuevoAlumno = it },
+            label = { Text("Nuevo alumno") }
+        )
+
+        if (mensajeError.isNotBlank()) {
+            Text(mensajeError, color = MaterialTheme.colorScheme.error)
+        }
+
         Button(onClick = {
-            val alumnnosRestantes = alumnos.filter { it !in alumnosSorteados }
-            if (alumnnosRestantes.isNotEmpty()) {
-                val alumnoSeleccionado = alumnnosRestantes.random()
-                alumnoActual = alumnoSeleccionado
-                alumnosSorteados.add(alumnoSeleccionado)
+            if (nuevoAlumno.isNotBlank()) {
+                val nombreExiste = alumnos.any { it.nombre.equals(nuevoAlumno.trim(), ignoreCase = true)}
+                if (!nombreExiste) {
+                    val nuevoNumero = (1..21).firstOrNull { n-> alumnos.none() {it.numero == n} } ?: (alumnos.size + 1)
+                    alumnos.add(Alumno(nuevoAlumno.trim(), nuevoNumero))
+                    nuevoAlumno = ""
+                    mensajeError = ""
+                } else {
+                    mensajeError = "El alumno ya existe en la lista"
+                }
+            }
+        }) {
+            Text("Añadir alumno")
+        }
+
+        Button(onClick = {
+            if (alumnosDisponibles.isNotEmpty()) {
+                val seleccionado = alumnosDisponibles.random()
+                alumnoActual = seleccionado
+                alumnosSorteados.add(seleccionado)
             } else {
                 alumnoActual = null
             }
         }) {
             Text("Sortear alumno")
         }
+
+        Button(onClick = {
+            alumnoActual = null
+            alumnosSorteados.clear()
+        }) {
+            Text("Reiniciar sorteo")
+        }
+
         if (alumnoActual != null) {
             Text("Alumno sorteado: ${alumnoActual!!.nombre} (Nº ${alumnoActual!!.numero})",
                 style = MaterialTheme.typography.titleLarge)
-
         } else if (alumnosSorteados.size == alumnos.size) {
             Text("Ya han salido todos los alumnos", color = MaterialTheme.colorScheme.primary)
+        }
+
+        Text("Alumnos disponibles: ", style = MaterialTheme.typography.titleMedium)
+        for (alumno in alumnosDisponibles) {
+            Text("- ${alumno.nombre} (Nº ${alumno.numero})")
+        }
+
+        Text("Alumnos que ya han salido: ", style = MaterialTheme.typography.titleMedium)
+        for (alumno in alumnosSorteados) {
+            Text("- ${alumno.nombre} (Nº ${alumno.numero})")
         }
     }
 }
