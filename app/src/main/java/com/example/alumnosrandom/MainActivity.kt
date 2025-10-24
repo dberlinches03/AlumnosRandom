@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
 fun RandomAlumnos() {
     val nombresAlumnos = listOf("David Berlinches", "Carlos Barrera", "Iker Toribio", "Benjamin Vargas", "David Salvador", "Daniel Beltrán")
 
-   
 
     val alumnos = remember {
         val alumnosAleatorios = nombresAlumnos.random()
@@ -44,6 +43,7 @@ fun RandomAlumnos() {
             listaAlumnos.add(Alumno(nombre, numero))
         }
         listaAlumnos
+
     }
 }
 
