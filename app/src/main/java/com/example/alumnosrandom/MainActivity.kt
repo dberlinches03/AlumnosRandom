@@ -79,6 +79,12 @@ fun RandomAlumnos(modifier: Modifier = Modifier
         }) {
             Text("Sortear alumno")
         }
+        if (alumnoActual != null) {
+            Text("Alumno sorteado: ${alumnoActual!!.nombre} (Nº ${alumnoActual!!.numero})",
+                style = MaterialTheme.typography.titleLarge)
+        } else if (alumnosSorteados.size == alumnos.size) {
+            Text("Ya han salido todos los alumnos", color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
